@@ -4,6 +4,8 @@ import linx7a.reservation_system.model.Reservation;
 import linx7a.reservation_system.service.ReservationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,19 +20,26 @@ public class ReservationController {
         this.reservationService = reservationService;
     }
 
-    @GetMapping()
-    public List<Reservation> getAllReservations() {
-        return reservationService.getAllReservations();
-    }
     @GetMapping("/{id}")
-    public Reservation getReservationById(@PathVariable Long id) {
+    public ResponseEntity<Reservation> getReservationById(
+            @PathVariable Long id
+    ) {
         log.info("Вызван getReservationById: id=" + id);
-        return reservationService.getReservationById(id);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(reservationService.getReservationById(id));
+    }
+
+    @GetMapping()
+    public ResponseEntity<List<Reservation>> getAllReservations() {
+        return ResponseEntity.ok(reservationService.getAllReservations());
     }
 
     @PostMapping
-    public Reservation createReservation(@RequestBody Reservation reservationToCreate) {
+    public ResponseEntity<Reservation> createReservation(
+            @RequestBody Reservation reservationToCreate
+    ) {
         log.info("Вызван createReservation");
-        return reservationService.createReservation(reservationToCreate);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(reservationService.createReservation(reservationToCreate));
     }
 }
