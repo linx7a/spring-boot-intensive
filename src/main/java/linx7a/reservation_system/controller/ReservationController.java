@@ -12,6 +12,7 @@ import java.util.List;
 
 
 @RestController
+@RequestMapping("/reservation")
 public class ReservationController {
     private static final Logger log = LoggerFactory.getLogger(ReservationController.class);
     private final ReservationService reservationService;
@@ -29,7 +30,7 @@ public class ReservationController {
                 .body(reservationService.getReservationById(id));
     }
 
-    @GetMapping()
+    @GetMapping
     public ResponseEntity<List<Reservation>> getAllReservations() {
         return ResponseEntity.ok(reservationService.getAllReservations());
     }
