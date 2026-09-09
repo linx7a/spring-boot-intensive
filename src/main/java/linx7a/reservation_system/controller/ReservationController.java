@@ -27,4 +27,10 @@ public class ReservationController {
         log.info("Вызван getReservationById: id=" + id);
         return reservationService.getReservationById(id);
     }
+
+    @PostMapping
+    public Reservation createReservation(@RequestBody Reservation reservationToCreate) {
+        log.info("Вызван createReservation");
+        return reservationService.createReservation(reservationToCreate);
+    }
 }
