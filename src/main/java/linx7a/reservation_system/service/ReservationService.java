@@ -61,4 +61,55 @@ public class ReservationService {
         }
         reservationMap.remove(id);
     }
+
+    public Reservation updateReservation(Long id, Reservation reservationToUpdate) {
+        if (!reservationMap.containsKey(id)) {
+            throw new NoSuchElementException("Брони с id: " + id + " не найдено.");
+        }
+        var reservation = reservationMap.get(id);
+        if (reservation.status() != ReservationStatus.PENDING) {
+            throw new IllegalStateException("Невозможно изменить бронь со статусом=" + reservation.status());
+        }
+        var updatedReservation = new Reservation(
+                reservation.id(),
+                reservationToUpdate.userId(),
+                reservationToUpdate.roomId(),
+                reservationToUpdate.startDate(),
+                reservationToUpdate.endDate(),
+                ReservationStatus.PENDING
+        );
+        reservationMap.put(reservation.id(), updatedReservation);
+        return updatedReservation;
+    }
+
+    public Reservation approveReservation(Long id) {
+        if (!reservationMap.containsKey(id)) {
+            throw new NoSuchElementException("Брони с id: " + id + " не найдено.");
+        }
+        var reservation = reservationMap.get(id);
+        if (reservation.status() != ReservationStatus.PENDING) {
+            throw new IllegalStateException("Невозможно изменить бронь со статусом=" + reservation.status());
+        }
+        boolean hasOverlap = reservationMap.values().stream()
+                .filter(other -> !other.id().equals(id))
+                .filter(other -> other.roomId().equals(reservation.roomId()))
+                .filter(other -> other.status() == ReservationStatus.APPROVED)
+                .anyMatch(other -> reservation.startDate().isBefore(other.endDate())
+                        && other.startDate().isBefore(reservation.endDate())
+                );
+        if (hasOverlap) {
+            throw new IllegalStateException("Бронь пересекается по датам с уже одобренной бронью на эту комнату.");
+        }
+        var approvedReservation = new Reservation(
+                reservation.id(),
+                reservation.userId(),
+                reservation.roomId(),
+                reservation.startDate(),
+                reservation.endDate(),
+                ReservationStatus.APPROVED
+        );
+        reservationMap.put(reservation.id(), approvedReservation);
+        return approvedReservation;
+    }
+
 }

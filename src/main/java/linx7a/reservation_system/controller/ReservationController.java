@@ -49,6 +49,22 @@ public class ReservationController {
                 .body(reservationService.createReservation(reservationToCreate));
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<Reservation> updateReservation(
+            @PathVariable("id") Long id,
+            @RequestBody Reservation reservationToUpdate
+    ) {
+        log.info("Вызван updateReservation id={}, reservationToUpdate={}", id, reservationToUpdate);
+        try {
+            var updated = reservationService.updateReservation(id, reservationToUpdate);
+            return ResponseEntity.ok(updated);
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        }
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteReservation(
             @PathVariable("id") Long id
@@ -59,6 +75,22 @@ public class ReservationController {
             return ResponseEntity.ok().build();
         } catch (NoSuchElementException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+    }
+
+    @PatchMapping("/{id}/approve")
+    public ResponseEntity<Reservation> approveReservation(
+            @PathVariable("id") Long id
+    ) {
+        log.info("Вызван approveReservation id={}", id);
+        try {
+            var approved = reservationService.approveReservation(id);
+            return ResponseEntity.ok(approved);
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
     }
 }
