@@ -26,9 +26,13 @@ public class ReservationController {
     public ResponseEntity<Reservation> getReservationById(
             @PathVariable Long id
     ) {
-        log.info("Вызван getReservationById: id=" + id);
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(reservationService.getReservationById(id));
+        log.info("Вызван getReservationById: id={}", id);
+        try {
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(reservationService.getReservationById(id));
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
     }
 
     @GetMapping
@@ -54,7 +58,7 @@ public class ReservationController {
             reservationService.deleteReservation(id);
             return ResponseEntity.ok().build();
         } catch (NoSuchElementException e) {
-            return ResponseEntity.status(404).build();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
 }
