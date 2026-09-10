@@ -54,4 +54,11 @@ public class ReservationService {
         reservationMap.put(newReservation.id(), newReservation);
         return newReservation;
     }
+
+    public void deleteReservation(Long id) {
+        if (!reservationMap.containsKey(id)) {
+            throw new NoSuchElementException("Брони с id: " + id + " не найдено.");
+        }
+        reservationMap.remove(id);
+    }
 }
