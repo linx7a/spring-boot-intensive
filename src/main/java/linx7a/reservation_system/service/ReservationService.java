@@ -2,6 +2,7 @@ package linx7a.reservation_system.service;
 
 import linx7a.reservation_system.model.Reservation;
 import linx7a.reservation_system.model.ReservationStatus;
+import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -29,9 +30,6 @@ public class ReservationService {
     }
 
     public List<Reservation> getAllReservations() {
-//        if (reservationMap.isEmpty()) {
-//            throw new RuntimeException("Ничего не найдено.");
-//        }
         return reservationMap.values().stream().toList();
     }
 
