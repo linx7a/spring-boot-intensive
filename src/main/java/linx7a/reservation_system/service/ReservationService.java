@@ -1,36 +1,34 @@
 package linx7a.reservation_system.service;
 
+import jakarta.persistence.EntityNotFoundException;
+import linx7a.reservation_system.entity.ReservationEntity;
 import linx7a.reservation_system.model.Reservation;
 import linx7a.reservation_system.model.ReservationStatus;
-import org.springframework.stereotype.Repository;
+import linx7a.reservation_system.repository.ReservationRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.concurrent.atomic.AtomicLong;
 
 @Service
 public class ReservationService {
-    private final Map<Long, Reservation> reservationMap;
+    private final ReservationRepository reservationRepository;
 
-    private final AtomicLong idCounter;
-
-    public ReservationService() {
-        reservationMap = new HashMap<>();
-        idCounter = new AtomicLong();
+    public ReservationService(ReservationRepository reservationRepository) {
+        this.reservationRepository = reservationRepository;
     }
 
     public Reservation getReservationById(Long id) {
-        if (!reservationMap.containsKey(id)) {
-            throw new NoSuchElementException("Брони с ID: " + id + " не найдено.");
-        }
-        return reservationMap.get(id);
+        ReservationEntity reservationEntity = reservationRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Брони с ID: " + id + " не найдено."));
+
+        return toDomainReservation(reservationEntity);
     }
 
     public List<Reservation> getAllReservations() {
-        return reservationMap.values().stream().toList();
+        List<ReservationEntity> allEntities = reservationRepository.findAll();
+        return allEntities.stream()
+                .map(this::toDomainReservation)
+                .toList();
     }
 
     public Reservation createReservation(Reservation reservationToCreate) {
@@ -40,74 +38,75 @@ public class ReservationService {
         if (reservationToCreate.status() != null) {
             throw new IllegalArgumentException("Статус должен быть пустым.");
         }
-        var newReservation = new Reservation(
-                idCounter.incrementAndGet(),
+        var entityToSave = new ReservationEntity(
+                null,
                 reservationToCreate.userId(),
                 reservationToCreate.roomId(),
                 reservationToCreate.startDate(),
                 reservationToCreate.endDate(),
                 ReservationStatus.PENDING
         );
-
-        reservationMap.put(newReservation.id(), newReservation);
-        return newReservation;
+        var saved = reservationRepository.save(entityToSave);
+        return toDomainReservation(saved);
     }
 
     public void deleteReservation(Long id) {
-        if (!reservationMap.containsKey(id)) {
-            throw new NoSuchElementException("Брони с id: " + id + " не найдено.");
-        }
-        reservationMap.remove(id);
+        var reservationEntity = reservationRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Брони с id: " + id + " не найдено."));
+        reservationRepository.deleteById(id);
     }
 
     public Reservation updateReservation(Long id, Reservation reservationToUpdate) {
-        if (!reservationMap.containsKey(id)) {
-            throw new NoSuchElementException("Брони с id: " + id + " не найдено.");
+        var reservationEntity = reservationRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Брони с id: " + id + " не найдено."));
+
+        if (reservationEntity.getStatus() != ReservationStatus.PENDING) {
+            throw new IllegalStateException("Невозможно изменить бронь со статусом=" + reservationEntity.getStatus());
         }
-        var reservation = reservationMap.get(id);
-        if (reservation.status() != ReservationStatus.PENDING) {
-            throw new IllegalStateException("Невозможно изменить бронь со статусом=" + reservation.status());
-        }
-        var updatedReservation = new Reservation(
-                reservation.id(),
+        var reservationToSave = new ReservationEntity(
+                reservationEntity.getId(),
                 reservationToUpdate.userId(),
                 reservationToUpdate.roomId(),
                 reservationToUpdate.startDate(),
                 reservationToUpdate.endDate(),
                 ReservationStatus.PENDING
         );
-        reservationMap.put(reservation.id(), updatedReservation);
-        return updatedReservation;
+        var updated = reservationRepository.save(reservationToSave);
+        return toDomainReservation(updated);
     }
 
     public Reservation approveReservation(Long id) {
-        if (!reservationMap.containsKey(id)) {
-            throw new NoSuchElementException("Брони с id: " + id + " не найдено.");
+        var reservationEntity = reservationRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Брони с id: " + id + " не найдено."));
+        if (reservationEntity.getStatus() != ReservationStatus.PENDING) {
+            throw new IllegalStateException("Невозможно изменить бронь со статусом=" + reservationEntity.getStatus());
         }
-        var reservation = reservationMap.get(id);
-        if (reservation.status() != ReservationStatus.PENDING) {
-            throw new IllegalStateException("Невозможно изменить бронь со статусом=" + reservation.status());
-        }
-        boolean hasOverlap = reservationMap.values().stream()
-                .filter(other -> !other.id().equals(id))
-                .filter(other -> other.roomId().equals(reservation.roomId()))
-                .filter(other -> other.status() == ReservationStatus.APPROVED)
-                .anyMatch(other -> reservation.startDate().isBefore(other.endDate())
-                        && other.startDate().isBefore(reservation.endDate())
+        boolean hasOverlap = reservationRepository.findAll().stream()
+                .filter(other -> !other.getId().equals(id))
+                .filter(other -> other.getRoomId().equals(reservationEntity.getRoomId()))
+                .filter(other -> other.getStatus() == ReservationStatus.APPROVED)
+                .anyMatch(other -> reservationEntity.getStartDate().isBefore(other.getEndDate())
+                        && other.getStartDate().isBefore(reservationEntity.getEndDate())
                 );
         if (hasOverlap) {
             throw new IllegalStateException("Бронь пересекается по датам с уже одобренной бронью на эту комнату.");
         }
-        var approvedReservation = new Reservation(
-                reservation.id(),
-                reservation.userId(),
-                reservation.roomId(),
-                reservation.startDate(),
-                reservation.endDate(),
-                ReservationStatus.APPROVED
+        reservationEntity.setStatus(ReservationStatus.APPROVED);
+        reservationRepository.save(reservationEntity);
+        return toDomainReservation(reservationEntity);
+    }
+
+    private Reservation toDomainReservation(
+            ReservationEntity reservation
+    ) {
+        return new Reservation(
+                reservation.getId(),
+                reservation.getUserId(),
+                reservation.getRoomId(),
+                reservation.getStartDate(),
+                reservation.getEndDate(),
+                reservation.getStatus()
         );
-        reservationMap.put(reservation.id(), approvedReservation);
-        return approvedReservation;
     }
 
 }
