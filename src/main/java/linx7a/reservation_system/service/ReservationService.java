@@ -29,9 +29,9 @@ public class ReservationService {
     }
 
     public List<Reservation> getAllReservations() {
-//        if (reservationMap.isEmpty()) {
-//            throw new RuntimeException("Ничего не найдено.");
-//        }
+        if (reservationMap.isEmpty()) {
+            throw new RuntimeException("Ничего не найдено.");
+        }
         return reservationMap.values().stream().toList();
     }
 
