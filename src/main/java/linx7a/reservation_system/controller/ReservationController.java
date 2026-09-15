@@ -2,6 +2,7 @@ package linx7a.reservation_system.controller;
 
 import jakarta.persistence.EntityNotFoundException;
 import linx7a.reservation_system.model.Reservation;
+import linx7a.reservation_system.model.ReservationStatus;
 import linx7a.reservation_system.service.ReservationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

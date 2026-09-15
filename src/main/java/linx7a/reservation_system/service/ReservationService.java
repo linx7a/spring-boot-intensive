@@ -8,6 +8,7 @@ import linx7a.reservation_system.repository.ReservationRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -52,7 +53,7 @@ public class ReservationService {
         var saved = reservationRepository.save(entityToSave);
         return toDomainReservation(saved);
     }
-
+    @Transactional
     public void cancelReservation(Long id) {
         var reservationEntity = reservationRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Брони с id: " + id + " не найдено."));
