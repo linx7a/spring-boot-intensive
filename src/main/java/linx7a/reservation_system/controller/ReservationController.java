@@ -31,7 +31,7 @@ public class ReservationController {
         try {
             return ResponseEntity.status(HttpStatus.OK)
                     .body(reservationService.getReservationById(id));
-        } catch (NoSuchElementException e) {
+        } catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
@@ -87,7 +87,7 @@ public class ReservationController {
         try {
             var approved = reservationService.approveReservation(id);
             return ResponseEntity.ok(approved);
-        } catch (NoSuchElementException e) {
+        } catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         } catch (IllegalStateException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
