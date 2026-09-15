@@ -1,16 +1,20 @@
 package linx7a.reservation_system.service;
 
 import jakarta.persistence.EntityNotFoundException;
+import linx7a.reservation_system.controller.ReservationController;
 import linx7a.reservation_system.entity.ReservationEntity;
 import linx7a.reservation_system.model.Reservation;
 import linx7a.reservation_system.model.ReservationStatus;
 import linx7a.reservation_system.repository.ReservationRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
 public class ReservationService {
+    private static final Logger log = LoggerFactory.getLogger(ReservationController.class);
     private final ReservationRepository reservationRepository;
 
     public ReservationService(ReservationRepository reservationRepository) {
@@ -50,10 +54,11 @@ public class ReservationService {
         return toDomainReservation(saved);
     }
 
-    public void deleteReservation(Long id) {
+    public void cancelReservation(Long id) {
         var reservationEntity = reservationRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Брони с id: " + id + " не найдено."));
-        reservationRepository.deleteById(id);
+        reservationRepository.setStatus(id, ReservationStatus.CANCELLED);
+        log.info("Запись успешно отменена.");
     }
 
     public Reservation updateReservation(Long id, Reservation reservationToUpdate) {

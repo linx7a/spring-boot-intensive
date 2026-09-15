@@ -1,5 +1,6 @@
 package linx7a.reservation_system.controller;
 
+import jakarta.persistence.EntityNotFoundException;
 import linx7a.reservation_system.model.Reservation;
 import linx7a.reservation_system.service.ReservationService;
 import org.slf4j.Logger;
@@ -58,22 +59,22 @@ public class ReservationController {
         try {
             var updated = reservationService.updateReservation(id, reservationToUpdate);
             return ResponseEntity.ok(updated);
-        } catch (NoSuchElementException e) {
+        } catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         } catch (IllegalStateException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteReservation(
+    @PatchMapping("/{id}/cancel")
+    public ResponseEntity<Void> cancelReservation(
             @PathVariable("id") Long id
     ) {
-        log.info("Вызван deleteReservation: id={}", id);
+        log.info("Вызван cancelReservation: id={}", id);
         try {
-            reservationService.deleteReservation(id);
+            reservationService.cancelReservation(id);
             return ResponseEntity.ok().build();
-        } catch (NoSuchElementException e) {
+        } catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
@@ -88,8 +89,7 @@ public class ReservationController {
             return ResponseEntity.ok(approved);
         } catch (NoSuchElementException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
-        catch (IllegalStateException e) {
+        } catch (IllegalStateException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
     }
