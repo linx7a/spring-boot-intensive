@@ -1,7 +1,6 @@
-package linx7a.reservation_system.entity;
+package linx7a.reservation_system.reservations;
 
 import jakarta.persistence.*;
-import linx7a.reservation_system.model.ReservationStatus;
 
 import java.time.LocalDate;
 

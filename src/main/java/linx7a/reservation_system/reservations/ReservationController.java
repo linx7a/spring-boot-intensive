@@ -1,8 +1,6 @@
-package linx7a.reservation_system.controller;
+package linx7a.reservation_system.reservations;
 
 import jakarta.validation.Valid;
-import linx7a.reservation_system.model.Reservation;
-import linx7a.reservation_system.service.ReservationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;

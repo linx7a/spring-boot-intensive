@@ -1,4 +1,4 @@
-package linx7a.reservation_system.exception;
+package linx7a.reservation_system.web;
 
 import jakarta.persistence.EntityNotFoundException;
 import org.slf4j.Logger;

@@ -1,4 +1,4 @@
-package linx7a.reservation_system.model;
+package linx7a.reservation_system.reservations;
 
 import jakarta.validation.constraints.*;
 

@@ -1,10 +1,6 @@
-package linx7a.reservation_system.service;
+package linx7a.reservation_system.reservations;
 
 import jakarta.persistence.EntityNotFoundException;
-import linx7a.reservation_system.entity.ReservationEntity;
-import linx7a.reservation_system.model.Reservation;
-import linx7a.reservation_system.model.ReservationStatus;
-import linx7a.reservation_system.repository.ReservationRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;

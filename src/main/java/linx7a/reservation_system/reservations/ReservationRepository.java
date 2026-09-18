@@ -1,7 +1,7 @@
-package linx7a.reservation_system.repository;
+package linx7a.reservation_system.reservations;
 
-import linx7a.reservation_system.entity.ReservationEntity;
-import linx7a.reservation_system.model.ReservationStatus;
+import linx7a.reservation_system.reservations.ReservationEntity;
+import linx7a.reservation_system.reservations.ReservationStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
