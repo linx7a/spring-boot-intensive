@@ -36,11 +36,13 @@ public class ReservationService {
     }
 
     public Reservation createReservation(Reservation reservationToCreate) {
-        if (reservationToCreate.id() != null) {
-            throw new IllegalArgumentException("ID должен быть пустым.");
-        }
         if (reservationToCreate.status() != null) {
             throw new IllegalArgumentException("Статус должен быть пустым.");
+        }
+        if (!reservationToCreate.endDate().isAfter(reservationToCreate.startDate())) {
+            throw new IllegalArgumentException(
+                    "Дата начала бронирования должна быть хотя бы на 1 день раньше, чем дата окончания."
+            );
         }
         var entityToSave = new ReservationEntity(
                 null,
@@ -58,6 +60,15 @@ public class ReservationService {
     public void cancelReservation(Long id) {
         var reservationEntity = reservationRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Брони с id: " + id + " не найдено."));
+        if (reservationEntity.getStatus() == ReservationStatus.APPROVED) {
+            throw new IllegalStateException(
+                    "Бронь уже одобрена и не может быть отменена самостоятельно. " +
+                            "Пожалуйста, свяжитесь с менеджером."
+            );
+        }
+        if (reservationEntity.getStatus() == ReservationStatus.CANCELLED) {
+            throw new IllegalStateException("Бронь уже отменена.");
+        }
         reservationRepository.setStatus(id, ReservationStatus.CANCELLED);
         log.info("Запись успешно отменена.");
     }
@@ -68,6 +79,11 @@ public class ReservationService {
 
         if (reservationEntity.getStatus() != ReservationStatus.PENDING) {
             throw new IllegalStateException("Невозможно изменить бронь со статусом=" + reservationEntity.getStatus());
+        }
+        if (!reservationToUpdate.endDate().isAfter(reservationToUpdate.startDate())) {
+            throw new IllegalArgumentException(
+                    "Дата начала бронирования должна быть хотя бы на 1 день раньше, чем дата окончания."
+            );
         }
         var reservationToSave = new ReservationEntity(
                 reservationEntity.getId(),
@@ -87,6 +103,7 @@ public class ReservationService {
         if (reservationEntity.getStatus() != ReservationStatus.PENDING) {
             throw new IllegalStateException("Невозможно изменить бронь со статусом=" + reservationEntity.getStatus());
         }
+
         boolean hasOverlap = reservationRepository.findAll().stream()
                 .filter(other -> !other.getId().equals(id))
                 .filter(other -> other.getRoomId().equals(reservationEntity.getRoomId()))
