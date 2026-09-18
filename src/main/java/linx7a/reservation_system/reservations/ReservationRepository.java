@@ -1,11 +1,12 @@
 package linx7a.reservation_system.reservations;
 
-import linx7a.reservation_system.reservations.ReservationEntity;
-import linx7a.reservation_system.reservations.ReservationStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+
+import java.time.LocalDate;
+import java.util.List;
 
 public interface ReservationRepository extends JpaRepository<ReservationEntity, Long> {
     @Modifying
@@ -18,5 +19,21 @@ public interface ReservationRepository extends JpaRepository<ReservationEntity, 
             @Param("id") Long id,
             @Param("status") ReservationStatus status
 
+    );
+
+    @Query("""
+            SELECT r.id FROM ReservationEntity r
+            WHERE r.roomId = :roomId
+            AND r.id <> :exceptionId
+            AND :startDate < r.endDate
+            AND r.startDate < :endDate
+            AND r.status = :status        
+            """)
+    List<Long> findConflictReservationIds(
+            @Param("roomId") Long roomId,
+            @Param("exceptionId") Long exceptionId,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate,
+            @Param("status") ReservationStatus status
     );
 }

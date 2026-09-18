@@ -100,14 +100,15 @@ public class ReservationService {
             throw new IllegalStateException("Невозможно изменить бронь со статусом=" + reservationEntity.getStatus());
         }
 
-        boolean hasOverlap = reservationRepository.findAll().stream()
-                .filter(other -> !other.getId().equals(id))
-                .filter(other -> other.getRoomId().equals(reservationEntity.getRoomId()))
-                .filter(other -> other.getStatus() == ReservationStatus.APPROVED)
-                .anyMatch(other -> reservationEntity.getStartDate().isBefore(other.getEndDate())
-                        && other.getStartDate().isBefore(reservationEntity.getEndDate())
-                );
-        if (hasOverlap) {
+        List<Long> conflictingIds = reservationRepository.findConflictReservationIds(
+                reservationEntity.getRoomId(),
+                reservationEntity.getId(),
+                reservationEntity.getStartDate(),
+                reservationEntity.getEndDate(),
+                ReservationStatus.APPROVED
+        );
+        if (!conflictingIds.isEmpty()) {
+            log.info("Конфликт с бронями: {}", conflictingIds);
             throw new IllegalStateException("Бронь пересекается по датам с уже одобренной бронью на эту комнату.");
         }
         reservationEntity.setStatus(ReservationStatus.APPROVED);
