@@ -53,6 +53,7 @@ public class ReservationService {
         var saved = reservationRepository.save(entityToSave);
         return toDomainReservation(saved);
     }
+
     @Transactional
     public void cancelReservation(Long id) {
         var reservationEntity = reservationRepository.findById(id)

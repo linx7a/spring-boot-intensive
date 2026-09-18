@@ -1,8 +1,6 @@
 package linx7a.reservation_system.controller;
 
-import jakarta.persistence.EntityNotFoundException;
 import linx7a.reservation_system.model.Reservation;
-import linx7a.reservation_system.model.ReservationStatus;
 import linx7a.reservation_system.service.ReservationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,7 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 
 
 @RestController
@@ -29,12 +26,8 @@ public class ReservationController {
             @PathVariable Long id
     ) {
         log.info("Вызван getReservationById: id={}", id);
-        try {
-            return ResponseEntity.status(HttpStatus.OK)
-                    .body(reservationService.getReservationById(id));
-        } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(reservationService.getReservationById(id));
     }
 
     @GetMapping
@@ -57,14 +50,8 @@ public class ReservationController {
             @RequestBody Reservation reservationToUpdate
     ) {
         log.info("Вызван updateReservation id={}, reservationToUpdate={}", id, reservationToUpdate);
-        try {
-            var updated = reservationService.updateReservation(id, reservationToUpdate);
-            return ResponseEntity.ok(updated);
-        } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        } catch (IllegalStateException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
-        }
+        var updated = reservationService.updateReservation(id, reservationToUpdate);
+        return ResponseEntity.ok(updated);
     }
 
     @PatchMapping("/{id}/cancel")
@@ -72,12 +59,8 @@ public class ReservationController {
             @PathVariable("id") Long id
     ) {
         log.info("Вызван cancelReservation: id={}", id);
-        try {
-            reservationService.cancelReservation(id);
-            return ResponseEntity.ok().build();
-        } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
+        reservationService.cancelReservation(id);
+        return ResponseEntity.ok().build();
     }
 
     @PatchMapping("/{id}/approve")
@@ -85,13 +68,7 @@ public class ReservationController {
             @PathVariable("id") Long id
     ) {
         log.info("Вызван approveReservation id={}", id);
-        try {
-            var approved = reservationService.approveReservation(id);
-            return ResponseEntity.ok(approved);
-        } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        } catch (IllegalStateException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
-        }
+        var approved = reservationService.approveReservation(id);
+        return ResponseEntity.ok(approved);
     }
 }
