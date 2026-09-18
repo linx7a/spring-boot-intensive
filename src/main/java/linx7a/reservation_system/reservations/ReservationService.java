@@ -12,22 +12,24 @@ import java.util.List;
 public class ReservationService {
     private static final Logger log = LoggerFactory.getLogger(ReservationService.class);
     private final ReservationRepository reservationRepository;
+    private final ReservationMapper mapper;
 
-    public ReservationService(ReservationRepository reservationRepository) {
+    public ReservationService(ReservationRepository reservationRepository, ReservationMapper mapper) {
         this.reservationRepository = reservationRepository;
+        this.mapper = mapper;
     }
 
     public Reservation getReservationById(Long id) {
         ReservationEntity reservationEntity = reservationRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Брони с ID: " + id + " не найдено."));
 
-        return toDomainReservation(reservationEntity);
+        return mapper.toDomain(reservationEntity);
     }
 
     public List<Reservation> getAllReservations() {
         List<ReservationEntity> allEntities = reservationRepository.findAll();
         return allEntities.stream()
-                .map(this::toDomainReservation)
+                .map(mapper::toDomain)
                 .toList();
     }
 
@@ -49,7 +51,7 @@ public class ReservationService {
                 ReservationStatus.PENDING
         );
         var saved = reservationRepository.save(entityToSave);
-        return toDomainReservation(saved);
+        return mapper.toDomain(saved);
     }
 
     @Transactional
@@ -90,7 +92,7 @@ public class ReservationService {
                 ReservationStatus.PENDING
         );
         var updated = reservationRepository.save(reservationToSave);
-        return toDomainReservation(updated);
+        return mapper.toDomain(updated);
     }
 
     public Reservation approveReservation(Long id) {
@@ -113,20 +115,6 @@ public class ReservationService {
         }
         reservationEntity.setStatus(ReservationStatus.APPROVED);
         reservationRepository.save(reservationEntity);
-        return toDomainReservation(reservationEntity);
+        return mapper.toDomain(reservationEntity);
     }
-
-    private Reservation toDomainReservation(
-            ReservationEntity reservation
-    ) {
-        return new Reservation(
-                reservation.getId(),
-                reservation.getUserId(),
-                reservation.getRoomId(),
-                reservation.getStartDate(),
-                reservation.getEndDate(),
-                reservation.getStatus()
-        );
-    }
-
 }
