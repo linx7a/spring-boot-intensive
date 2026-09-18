@@ -1,5 +1,6 @@
 package linx7a.reservation_system.controller;
 
+import jakarta.validation.Valid;
 import linx7a.reservation_system.model.Reservation;
 import linx7a.reservation_system.service.ReservationService;
 import org.slf4j.Logger;
@@ -37,7 +38,7 @@ public class ReservationController {
 
     @PostMapping
     public ResponseEntity<Reservation> createReservation(
-            @RequestBody Reservation reservationToCreate
+            @RequestBody @Valid Reservation reservationToCreate
     ) {
         log.info("Вызван createReservation");
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -47,7 +48,7 @@ public class ReservationController {
     @PutMapping("/{id}")
     public ResponseEntity<Reservation> updateReservation(
             @PathVariable("id") Long id,
-            @RequestBody Reservation reservationToUpdate
+            @RequestBody @Valid Reservation reservationToUpdate
     ) {
         log.info("Вызван updateReservation id={}, reservationToUpdate={}", id, reservationToUpdate);
         var updated = reservationService.updateReservation(id, reservationToUpdate);

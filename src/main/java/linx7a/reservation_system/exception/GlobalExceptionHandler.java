@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
@@ -37,9 +38,12 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(errorDto);
     }
 
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ErrorResponseDto> handleBadRequest(IllegalArgumentException e) {
-        log.error("Обрабатываем IllegalArgumentException", e);
+    @ExceptionHandler(exception = {
+            IllegalArgumentException.class,
+            MethodArgumentNotValidException.class
+    })
+    public ResponseEntity<ErrorResponseDto> handleBadRequest(Exception e) {
+        log.error("Обрабатываем IllegalArgumentException или Not valid exception", e);
         var errorDto = new ErrorResponseDto(
                 "Bad request",
                 e.getMessage(),
@@ -52,7 +56,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponseDto> handleUnexpected(Exception e) {
         log.error("Обрабатываем исключение", e);
         var errorDto = new ErrorResponseDto(
-            "Internal server error",
+                "Internal server error",
                 e.getMessage(),
                 LocalDateTime.now()
         );
