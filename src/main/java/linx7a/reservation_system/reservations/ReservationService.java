@@ -42,14 +42,9 @@ public class ReservationService {
                     "Дата начала бронирования должна быть хотя бы на 1 день раньше, чем дата окончания."
             );
         }
-        var entityToSave = new ReservationEntity(
-                null,
-                reservationToCreate.userId(),
-                reservationToCreate.roomId(),
-                reservationToCreate.startDate(),
-                reservationToCreate.endDate(),
-                ReservationStatus.PENDING
-        );
+
+        var entityToSave = mapper.toEntity(reservationToCreate);
+        entityToSave.setStatus(ReservationStatus.PENDING);
         var saved = reservationRepository.save(entityToSave);
         return mapper.toDomain(saved);
     }
@@ -83,14 +78,11 @@ public class ReservationService {
                     "Дата начала бронирования должна быть хотя бы на 1 день раньше, чем дата окончания."
             );
         }
-        var reservationToSave = new ReservationEntity(
-                reservationEntity.getId(),
-                reservationToUpdate.userId(),
-                reservationToUpdate.roomId(),
-                reservationToUpdate.startDate(),
-                reservationToUpdate.endDate(),
-                ReservationStatus.PENDING
-        );
+
+        var reservationToSave = mapper.toEntity(reservationToUpdate);
+        reservationToSave.setId(reservationEntity.getId());
+        reservationToSave.setStatus(ReservationStatus.PENDING);
+
         var updated = reservationRepository.save(reservationToSave);
         return mapper.toDomain(updated);
     }
