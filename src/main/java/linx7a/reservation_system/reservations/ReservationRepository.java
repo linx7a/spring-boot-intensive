@@ -1,5 +1,6 @@
 package linx7a.reservation_system.reservations;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -35,5 +36,16 @@ public interface ReservationRepository extends JpaRepository<ReservationEntity, 
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate,
             @Param("status") ReservationStatus status
+    );
+
+    @Query("""
+            SELECT r FROM ReservationEntity r
+            WHERE (:roomId IS NULL OR r.roomId = :roomId)
+            AND (:userId IS NULL OR r.userId = :userId)
+            """)
+    List<ReservationEntity> searchAllByFilter(
+            @Param("roomId") Long roomId,
+            @Param("userId") Long userId,
+            Pageable pageable
     );
 }

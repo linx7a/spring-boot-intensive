@@ -3,6 +3,7 @@ package linx7a.reservation_system.reservations;
 import jakarta.persistence.EntityNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,8 +27,15 @@ public class ReservationService {
         return mapper.toDomain(reservationEntity);
     }
 
-    public List<Reservation> getAllReservations() {
-        List<ReservationEntity> allEntities = reservationRepository.findAll();
+    public List<Reservation> searchAllByFilter(ReservationSearchFilter filter) {
+        int pageSize = filter.pageSize() != null ? filter.pageSize() : 10;
+        int pageNumber = filter.pageNumber() != null ? filter.pageNumber() : 0;
+        var pageable = Pageable.ofSize(pageSize).withPage(pageNumber);
+        List<ReservationEntity> allEntities = reservationRepository.searchAllByFilter(
+                filter.roomId(),
+                filter.userId(),
+                pageable
+        );
         return allEntities.stream()
                 .map(mapper::toDomain)
                 .toList();
